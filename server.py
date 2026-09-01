@@ -4,7 +4,8 @@ from flask import Flask, request, jsonify, send_from_directory
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 
-XINDONG_DIR = os.path.join(os.path.dirname(__file__), 'data')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+XINDONG_DIR = os.path.join(BASE_DIR, 'data')
 os.makedirs(XINDONG_DIR, exist_ok=True)
 
 
@@ -27,7 +28,7 @@ def sf_tts_proxy():
 
 @app.route('/')
 def index():
-    return send_from_directory('.', 'xindong.html')
+    return send_from_directory(BASE_DIR, 'xindong.html')
 
 @app.route('/xindong/api/create', methods=['POST'])
 def xindong_create():
@@ -161,4 +162,4 @@ def xindong_list():
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, debug=False)
