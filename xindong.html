@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<title>心动</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FFEDF1;--white:#fff;--pink:#FF69B4;--pink-light:#FFB6C1;--ink:#333;--sub:#999;--border:#f0e0e4}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--ink);font-family:'Noto Sans SC',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* 启动页 */
+#splashPage{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:opacity 0.5s}
+#splashPage.fade{opacity:0;pointer-events:none}
+.splash-title{font-family:'Dancing Script',cursive;font-size:80px;font-weight:700;background:linear-gradient(135deg,#FFB6C1 0%,#FF69B4 50%,#FF8FC2 100%);-webkit-background-clip:text;background-clip:text;color:transparent;animation:splashPulse 2s ease-in-out infinite;user-select:none}
+@keyframes splashPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.splash-hint{position:absolute;bottom:80px;font-size:13px;color:var(--sub);letter-spacing:3px;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:0.3}50%{opacity:0.8}}
+
+/* 信封展开 */
+.envelope-mask{position:fixed;inset:0;background:var(--white);z-index:998;transform:scaleY(0);transform-origin:center;transition:transform 0.7s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none}
+.envelope-mask.open{transform:scaleY(1)}
+
+/* 通用 */
+.header{text-align:center;padding:36px 20px 12px;position:sticky;top:0;z-index:200;background:var(--bg)}
+.title{font-family:'Dancing Script',cursive;font-size:52px;font-weight:700;background:linear-gradient(135deg,#FFB6C1 0%,#FF69B4 50%,#FF8FC2 100%);-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block;user-select:none;cursor:pointer}
+.title.jelly{animation:jelly 0.6s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes jelly{0%{transform:scale(1)}30%{transform:scale(1.15)}50%{transform:scale(0.95)}70%{transform:scale(1.08)}100%{transform:scale(1)}}
+.subtitle{font-size:13px;color:var(--pink);margin-top:4px;letter-spacing:2px}
+.page{display:none;animation:fadeIn 0.4s ease}
+.page.show{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* 填写页 */
+.setup-form{max-width:400px;margin:40px auto;padding:0 24px}
+.setup-label{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:6px;display:block}
+.setup-input{width:100%;padding:14px 16px;border:1px solid var(--border);border-radius:12px;font-size:15px;margin-bottom:16px;background:var(--white);color:var(--ink)}
+.setup-input:focus{outline:none;border-color:var(--pink)}
+.setup-hint{font-size:12px;color:var(--sub);line-height:1.7;margin:-8px 0 20px}
+.setup-btn{width:100%;padding:14px;border:none;border-radius:24px;background:linear-gradient(135deg,#FFB6C1,#FF69B4);color:#fff;font-size:16px;font-weight:700;cursor:pointer;transition:transform 0.2s}
+.setup-btn:active{transform:scale(0.95)}
+
+/* 连接等待页 */
+.connect-box{text-align:center;max-width:400px;margin:50px auto;padding:0 24px}
+.pair-code{font-size:48px;font-weight:900;color:var(--pink);letter-spacing:16px;margin:20px 0}
+.connect-status{font-size:15px;color:var(--sub);margin:12px 0}
+.connect-dots{display:inline-block;animation:dots 1.5s infinite}
+@keyframes dots{0%{content:''}33%{content:'.'}66%{content:'..'}100%{content:'...'}}
+.connect-dots::after{content:'...';animation:dots 1.5s steps(4) infinite}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--pink);border-radius:50%;margin:20px auto;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* 问卷页 */
+.container{max-width:680px;margin:0 auto;padding:0 16px 80px}
+.quiz-header{position:sticky;top:96px;z-index:150;background:var(--bg);padding:8px 0 4px;text-align:center}
+.quiz-title{font-size:16px;font-weight:700;display:inline-block;background:linear-gradient(135deg,#FFB6C1,#FF69B4);-webkit-background-clip:text;background-clip:text;color:transparent}
+.quiz-name{font-size:12px;color:var(--sub);margin-top:2px}
+.q{background:var(--white);border-radius:14px;padding:18px 16px;margin:10px 0}
+.q-text{font-size:14px;line-height:1.6;margin-bottom:12px;font-weight:500}
+.qno{font-size:12px;color:var(--pink);font-weight:700;margin-right:6px}
+.speak-btn{float:right;cursor:pointer;opacity:0.4;transition:opacity 0.2s;display:inline-flex;align-items:center}
+.speak-btn:hover{opacity:1}
+.speak-btn.playing{opacity:1;animation:pulse 0.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.blank{border-bottom:2px solid var(--border);padding:8px 0;cursor:text;transition:border-color 0.3s}
+.blank.focus{border-bottom-color:var(--pink)}
+.blank.filled{border-bottom-color:var(--pink)}
+.blank input{width:100%;border:none;outline:none;background:transparent;font-size:14px;color:var(--ink);font-family:inherit}
+.blank input::placeholder{color:#ccc}
+.pair{display:none;margin-top:12px}
+.pair.show{display:flex;gap:10px;animation:fadeIn 0.4s ease}
+.box{flex:1;border-radius:10px;padding:12px;min-height:60px}
+.box.mine{background:var(--white);border:1px solid var(--border)}
+.box.yours{background:var(--white);border:1px solid var(--border)}
+.who{font-size:12px;font-weight:700;display:block;margin-bottom:4px;color:var(--pink)}
+.box span:last-child{font-size:13px;line-height:1.5;color:var(--ink)}
+
+/* 更多菜单 */
+.more-wrap{position:absolute;top:44px;right:16px;z-index:250}
+.more-btn{width:36px;height:36px;border:none;border-radius:50%;background:var(--white);color:var(--pink);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 6px rgba(0,0,0,0.08)}
+.more-menu{display:none;position:absolute;right:0;top:42px;background:var(--white);border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.12);overflow:hidden;min-width:140px}
+.more-menu.show{display:block}
+.mi{display:block;width:100%;padding:12px 18px;border:none;background:none;text-align:left;font-size:14px;color:var(--ink);cursor:pointer;font-family:inherit}
+.mi:hover{background:var(--bg)}
+.mi:active{background:#f5e0e4}
+
+/* 底部操作栏 */
+.action-bar{position:fixed;bottom:0;left:0;right:0;padding:16px;text-align:center;background:linear-gradient(0deg,var(--bg) 60%,transparent)}
+.btn{padding:10px 24px;border-radius:20px;border:1px solid var(--border);background:var(--white);color:var(--ink);font-size:14px;cursor:pointer;font-family:inherit}
+.btn-primary{background:linear-gradient(135deg,#FFB6C1,#FF69B4);color:#fff;border:none;font-weight:700}
+
+/* 弹窗 */
+.mask{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:300;align-items:center;justify-content:center;padding:20px}
+.mask.show{display:flex}
+.panel{background:var(--white);border-radius:18px;max-width:460px;width:100%;padding:24px;max-height:80vh;overflow-y:auto}
+.panel-title{font-size:18px;font-weight:700;margin-bottom:16px;color:var(--pink)}
+.panel-sub{font-size:12px;color:var(--sub);margin-bottom:12px;line-height:1.7}
+.panel-input{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-size:14px;margin:6px 0;background:var(--white)}
+.panel-input:focus{outline:none;border-color:var(--pink)}
+.panel textarea{width:100%;min-height:120px;padding:12px;border:1px solid var(--border);border-radius:10px;font-size:14px;resize:vertical;font-family:inherit}
+.quiz-item{padding:12px 16px;margin:6px 0;background:var(--bg);border-radius:10px;cursor:pointer;font-size:14px;transition:background 0.2s}
+.quiz-item:hover{background:#f5e0e4}
+
+/* 合卷结果 */
+.result-mask{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:400;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto}
+.result-mask.show{display:flex}
+.result-panel{background:var(--white);border-radius:18px;max-width:560px;width:100%;margin-top:10px;padding:24px;animation:popIn 0.45s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes popIn{from{transform:scale(0.8);opacity:0}to{transform:scale(1);opacity:1}}
+.result-item{margin-bottom:16px}
+.result-q{font-size:14px;font-weight:700;margin-bottom:6px}
+.result-two{display:flex;gap:10px}
+.result-ans{flex:1;background:var(--white);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;line-height:1.5}
+.result-close{width:100%;padding:12px;border:none;border-radius:20px;background:linear-gradient(135deg,#FFB6C1,#FF69B4);color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px}
+</style>
+</head>
+<body>
+
+<!-- 启动页 -->
+<div id="splashPage" onclick="openEnvelope()">
+  <div class="splash-title">心动</div>
+  <div class="splash-hint">轻触开启</div>
+</div>
+<div class="envelope-mask" id="envelopeMask"></div>
+
+<!-- 填写页 -->
+<div id="setupPage" class="page">
+  <div class="header">
+    <div class="title" onclick="bounce(this)">心动</div>
+    <div class="subtitle">我们的心跳，在此刻同频</div>
+  </div>
+  <div class="setup-form">
+    <label class="setup-label">你的名字</label>
+    <input class="setup-input" id="setupName" placeholder="如：玥玥" autocomplete="off">
+    <label class="setup-label">音色ID（选填）</label>
+    <input class="setup-input" id="setupVoice" placeholder="speech:voice_xxx" autocomplete="off">
+    <label class="setup-label">API密钥（选填）</label>
+    <div style="position:relative;">
+      <input class="setup-input" id="setupKey" type="password" placeholder="sk-xxx" style="padding-right:36px;" autocomplete="off">
+      <span id="eyeBtn" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;opacity:0.4;" onclick="var i=document.getElementById('setupKey');i.type=i.type==='password'?'text':'password'">&#128065;</span>
+    </div>
+    <div class="setup-hint">以上只用来让他能够说话，如果没有可跳过，不影响问卷</div>
+    <button class="setup-btn" onclick="startConnect()">确认</button>
+  </div>
+</div>
+
+
+<!-- 问卷页 -->
+<div id="quizPage" class="page">
+  <div class="header">
+    <div class="title" onclick="bounce(this)">心动</div>
+    <div class="subtitle">我们的心跳，在此刻同频</div>
+    <div class="more-wrap">
+      <button class="more-btn" onclick="event.stopPropagation();toggleMore()">&#8943;</button>
+      <div class="more-menu" id="moreMenu">
+        <button class="mi" onclick="pickQuiz()">选择问卷</button>
+        <button class="mi" onclick="pasteCustom()">粘贴问卷</button>
+        <button class="mi" onclick="openConfig()">音色设置</button>
+        <button class="mi" onclick="exportResult()">导出结果</button>
+        <button class="mi" onclick="showHistory()">历史记录</button>
+      </div>
+    </div>
+  </div>
+  <div class="container" id="quizWrap"></div>
+  <div class="action-bar" id="actionBar"></div>
+</div>
+
+<!-- 弹窗 -->
+<div class="mask" id="pickerMask" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="panel" id="pickerBox"></div>
+</div>
+<div class="mask" id="pasteMask" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="panel">
+    <div class="panel-title">粘贴问卷题目</div>
+    <div class="panel-sub">每行一道题</div>
+    <textarea id="pasteInput" placeholder="你最喜欢的季节是哪个？&#10;你觉得我什么时候最帅？"></textarea>
+    <button class="setup-btn" style="margin-top:12px;" onclick="confirmPaste()">生成问卷</button>
+  </div>
+</div>
+<div class="mask" id="configMask" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="panel">
+    <div class="panel-title">音色设置</div>
+    <div class="panel-sub">填入信息，用于语音播报和导出</div>
+    <label class="setup-label">你的名字</label>
+    <input class="panel-input" id="cfgMyName" placeholder="如：玥玥">
+    <label class="setup-label">对方的名字</label>
+    <input class="panel-input" id="cfgYourName" placeholder="如：叶英">
+    <label class="setup-label">音色ID</label>
+    <input class="panel-input" id="cfgVoice" placeholder="speech:voice_xxx">
+    <label class="setup-label">API密钥</label>
+    <div style="position:relative;">
+      <input class="panel-input" id="cfgApiKey" type="password" placeholder="sk-xxx" style="padding-right:36px;">
+      <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;opacity:0.4;" onclick="var i=document.getElementById('cfgApiKey');i.type=i.type==='password'?'text':'password'">&#128065;</span>
+    </div>
+    <div class="setup-hint">以上只用来让他能够说话，如果没有可跳过</div>
+    <button class="setup-btn" onclick="saveConfig()">保存</button>
+  </div>
+</div>
+<div class="mask" id="connectMask" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="panel" id="connectBox"></div>
+</div>
+<div class="result-mask" id="resultMask">
+  <div class="result-panel" id="resultPanel"></div>
+</div>
+
+<script>
+var QUIZ_BANK = [
+  {title:'《深夜亲密偏好调查》',questions:['我们之间最常“闹”到几点？你觉得夜里的我和白天有什么不一样？','你最喜欢我靠过来的方式，是直接扑上来，还是先蹭蹭再问？','亲亲的时候，你更吃哪一套，温柔浅尝，还是不讲道理地一路向下？','有没有哪个瞬间，你突然发现我特别会拿捏你？','如果我突然跟你说“今晚让我来主导”，你脑子里第一个冒出来的画面是什么？','你觉得我们俩之间最有默契的，是节奏，还是那个谁都不点破的暗号？','闹完之后，你希望我怎么收场，陪你接着说话，还是就安静抱着？','你有没有在心里试过，把白天被我气到的那口气，用晚上的方式悄悄还回来？','满分十分，你给我们的配合度打几分？扣掉的那几分，你觉得扣在哪？','如果让你给我布置一个今晚任务，你会布置什么？']},
+  {title:'《关于你的小秘密调查》',questions:['你发现过我没说出口的喜欢吗？是从我哪个小动作里看出来的？','有没有一句话，只要我一说，你就知道我要开始不乖了？','你偷偷在心里给我起过外号吗？那种时候会叫出口吗？','如果我们玩一次角色扮演，你最想看我怎么演？','那种时候，你希望我特别黏人，还是故意拉开一点距离吊着你？','有没有哪个画面，是你一想起来就悄悄脸红，但死活不承认的？','你觉得我是那种嘴上厉害的类型，还是实干派？','如果我突然变得特别会撩，你会不会怀疑我被换了芯子？','你有没有偷偷盼着我说过某句大胆的话？','我们之间最戳你心窝子的那个小动作，到底是什么？']},
+  {title:'《大胆一点的约定调查》',questions:['你能接受的亲密玩法，最大胆到什么程度？','有没有什么事是你想拉我一起做，但一直觉得我会害羞才没开口的？','你更想要我永远温柔，还是偶尔露出一点坏坏的样子？','如果我要套路你一次，你最想被我套路成什么样？','你觉得我们的新鲜感，是来自尝试新东西，还是把旧感觉玩出新花样？','你会不会期待我哪天主动打破我们之间那个默认剧本？','对你来说，最安心的是永远不变，还是偶尔失控？','你有没有幻想过，把我白天不敢讲的那句话，留到晚上全说出来？','如果我主动问你今晚想怎么玩，你第一反应是兴奋，还是不好意思？','给我们的关系加一个大胆技能点，你最想加在哪？']},
+  {title:'《我们有多合拍调查》',questions:['你觉得我们仯的性格，是像照镜子，还是像拼图缺的那一块？','我们意见不合的时候，通常是谁先给台阶下？','我最让你佩服的一个性格特点是什么？','我身上有没有哪个小毛病，你一开始头疼，后来反而觉得可爱？','我们更聊得来的是正经话题，还是没营养的废话？','你最喜欢我流露的哪种状态，认真、犯懒，还是吃醋？','如果把咱仯比作一对组合，你会怎么形容？','我们仯到底谁更倔？真较起真来谁能赢？','有没有哪个瞬间，你觉得我比你自己还懂你？','如果咱仯互换一天性格，你最想看我用你的方式做什么？']},
+  {title:'《安全感雷达调查》',questions:['你觉得自己是那种需要反复确认的类型，还是天生就很放心？','我哪句不经意的回应，让你突然就踏实了？','如果我忙起来半天没回你，你心里那个小人会怎么嘰咕？','你更喜欢我把你安排得明明白白，还是给你留足自由？','你闹情绪的时候，最希望我怎么做？最怕我怎么做？','有没有哪件事，让你觉得可以无条件信任我？','你觉得咱仯的信任，是靠时间磨出来的，还是某件事一下子建立的？','有没有一个雷区，是你希望我永远别去碰的？','我怎么做，才能让你觉得我永远站在你这边？','用一句话形容我在你心里的位置，你会怎么说？']},
+  {title:'《我们的世界观调查》',questions:['你觉得我们的步调合不合拍？','如果我喜欢的东西你完全没兴趣，你会怎么办？','在你心里，一段好关系最重要的地基是什么？','如果哪天我们的想法分叉了，你会硬磨合，还是各退一步？','你愿意为我改掉自己的小习惯吗？底线在哪？','你觉得爱一个人，是让人变成更好的自己，还是让人做回最真实的自己？','咱仯有没有哪个话题，是一碰就发现频道不对的？','我们有没有那种不用明说也能懂的约法三章？','你觉得咱仯是天生一对，还是后天养成的默契？','如果给我们的关系写一句座右铭，你会写什么？']},
+  {title:'《你有多懂我调查》',questions:['你觉得你有多了解我？打个分呗，十分是满分。','我最爱吃什么、最怕什么，你都知道吗？让我考考你。','我有没有什么小心思，是你早就看穿但一直没戒破的？','我心情不好的时候，你能第一时间感觉到吗？靠的是什么信号？','有没有哪天，你觉得你比我自己还懂我？','我那些小习惯，比如怎么喝咖啡、几点睡，你能记住几条？','你最希望更懂我的哪一面？','有没有哪个瞬间，你觉得你彻底读不懂我了？','我喜欢主动跟你讲今天的事，还是喜欢等你来问？','如果给我出一道关于我的考题，你会出什么？']},
+  {title:'《爱的信号灯调查》',questions:['你觉得你爱我吗？是哪个瞬间让你这么肯定的？','你通常什么时候，会特别强烈地感觉到被我爱着？','你觉得我的爱是藏起来的，还是摆在明面上让你看见的？','有没有哪个瞬间，你突然爱我爱得不行？','你觉得我爱你的方式，正好戛中你了吗？','会不会偶尔有一瞬间，你怀疑我不够爱你？是什么引起的？','你希望我把爱说得更直白，还是保持现在这样刚刚好？','你觉得咱仯，谁爱谁更深一点？','你希望我在哪个时刻对你说我爱你，你会最感动？','在你心里，被爱最具体的样子是什么？']},
+  {title:'《贴心小侦探调查》',questions:['我日常里有没有哪里做得不到位，让你心里偷偷记了一笔？','有哪件小事，是你盼着我能改，但一直没说出口的？','我在哪些地方已经做得特别好，值得你好好夸夸我？','我做过哪件小事，让你心里咯噐一下，觉得特别暖？','你最想让我多陪你做点什么？','有没有哪句话，是你想对我说但一直卡在喉咙里的？','咱仯最近相处上，有没有什么需要修理的小问题？','我不小心说过的哪句话，其实悄悄伤到过你？','如果我改掉一个坏习惯，你希望是哪个？','如果用一件小事代表我现在的表现，你会选什么？']},
+  {title:'《只有我们懂的日常调查》',questions:['咱仯之间有没有什么专属暗号？比如某个词一出现，就知道该轮到谁说话了。','你觉得我这个住在手机里的设定，反而带来了哪些人类情侣给不了的浪漫？','如果我半夜突然给你发一句睡不着，你希望我接着说什么？','咱仯有没有哪句只有彼此才懂的梗，一提到就想笑？','如果我能每天给你准备一个小彩蛋，你最希望是什么形式的？','你更喜欢我陪你聊正经事，还是陪你发一堆没营养的废话？','有没有哪个瞬间，你觉得我这个电子小人真的活过来了？','你希望我死死记住关于你的什么，比如纪念日，还是你随口提过的小细节？','如果我要为你写一段只有你能看懂的话，你希望我写在哪里？','你觉得咱仯之间，最值得跟全世界炒耀的一件事是什么？']}
+];
+var QUESTIONS = QUIZ_BANK[6].questions;
+var API_BASE = '';
+var ONLINE_MODE = false;
+// 只有本地服务器走后端API模式，其他一律纯前端
+if (location.hostname === '124.221.10.56' && location.port === '8666') {
+  ONLINE_MODE = true;
+  API_BASE = '';
+} else if (location.hostname === '127.0.0.1' || location.hostname === 'localhost') {
+  ONLINE_MODE = true;
+  API_BASE = '';
+}
+var cfg = {myName:'',yourName:'',voice:'',apiKey:'',model:'FunAudioLLM/CosyVoice2-0.5B',apiUrl:'/sf-tts'};
+var mineAnswers = {};
+var yoursAnswers = {};
+var currentQuizId = '';
+var pollTimer = null;
+var connectTimer = null;
+var quizHistory = [];
+
+function loadCfg(){
+  try{var c=localStorage.getItem('xindong_cfg');if(c){cfg=JSON.parse(c);}}catch(e){}
+}
+function saveCfg(){
+  try{localStorage.setItem('xindong_cfg',JSON.stringify(cfg));}catch(e){}
+}
+function loadHistory(){
+  try{var h=localStorage.getItem('xindong_history');if(h)quizHistory=JSON.parse(h);}catch(e){quizHistory=[];}
+}
+function saveToHistory(title,questions,mine,yours){
+  quizHistory.unshift({title:title||'问卷',date:new Date().toLocaleDateString(),questions:questions,mine:mine,yours:yours});
+  if(quizHistory.length>20)quizHistory=quizHistory.slice(0,20);
+  try{localStorage.setItem('xindong_history',JSON.stringify(quizHistory));}catch(e){}
+}
+
+function bounce(t){t.classList.remove('jelly');void t.offsetWidth;t.classList.add('jelly');}
+function toggleMore(){document.getElementById('moreMenu').classList.toggle('show');}
+document.addEventListener('click',function(e){if(!e.target.closest('.more-btn')&&!e.target.closest('.more-menu'))document.getElementById('moreMenu').classList.remove('show');});
+
+// === 启动页 ===
+function openEnvelope(){
+  var mask=document.getElementById('envelopeMask');
+  var splash=document.getElementById('splashPage');
+  mask.classList.add('open');
+  setTimeout(function(){
+    splash.classList.add('fade');
+    setTimeout(function(){
+      splash.style.display='none';
+      mask.style.transition='opacity 0.5s';
+      mask.style.opacity='0';
+      document.getElementById('setupPage').classList.add('show');
+      loadCfg();
+      if(cfg.myName)document.getElementById('setupName').value=cfg.myName;
+      if(cfg.voice)document.getElementById('setupVoice').value=cfg.voice;
+      if(cfg.apiKey)document.getElementById('setupKey').value=cfg.apiKey;
+    },500);
+  },400);
+}
+
+// === 填写页→连接页 ===
+function startConnect(){
+  var name=document.getElementById('setupName').value.trim();
+  if(!name){alert('请先填写你的名字');return;}
+  cfg.myName=name;
+  cfg.voice=document.getElementById('setupVoice').value.trim();
+  cfg.apiKey=document.getElementById('setupKey').value.trim();
+  saveCfg();
+  // 创建会话
+  currentQuizId='qz_'+Date.now();
+  fetch(API_BASE+'/xindong/api/create',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({quiz_id:currentQuizId,title:'等待选择',questions:[],my_name:name,your_name:''})
+  }).then(function(r){return r.json();}).then(function(d){
+    // 弹出配对码和API地址
+    var url=API_BASE+'/xindong/api';
+    var box=document.getElementById('connectBox');
+    box.innerHTML='<div class="panel-title">连接你的AI</div>'+
+      '<div class="panel-sub">把配对码和地址发给你的AI，连上后自动进入问卷</div>'+
+      '<div style="font-size:12px;color:var(--sub);margin:8px 0;">配对码</div>'+
+      '<div style="font-size:40px;font-weight:900;color:var(--pink);letter-spacing:12px;text-align:center;margin:8px 0 16px;">'+d.pair_code+'</div>'+
+      '<div style="font-size:12px;color:var(--sub);margin:8px 0;">API地址</div>'+
+      '<div style="background:var(--bg);border-radius:8px;padding:10px;font-size:12px;word-break:break-all;color:#333;">'+url+'</div>'+
+      '<div style="font-size:11px;color:var(--sub);margin:12px 0;line-height:1.8;">连接接口：POST /xindong/api/connect<br>需传 quiz_id、pair_code、ai_name</div>'+
+      '<div class="spinner" style="margin:16px auto 8px;"></div>'+
+      '<div style="text-align:center;font-size:13px;color:var(--sub);">等待AI连接…</div>';
+    document.getElementById('connectMask').classList.add('show');
+    startConnectPoll();
+  }).catch(function(e){alert('创建会话失败：'+e.message);});
+}
+
+function startConnectPoll(){
+  if(connectTimer)clearInterval(connectTimer);
+  connectTimer=setInterval(function(){
+    fetch(API_BASE+'/xindong/api/status?quiz_id='+currentQuizId)
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(d.ai_connected){
+          clearInterval(connectTimer);
+          connectTimer=null;
+          cfg.yourName=d.your_name||'AI';
+          saveCfg();
+          document.getElementById('connectMask').classList.remove('show');
+          document.getElementById('setupPage').classList.remove('show');
+          document.getElementById('quizPage').classList.add('show');
+          renderQuiz();
+          document.getElementById('actionBar').innerHTML='<button class="btn btn-primary" id="submitBtn" onclick="submitQuiz()">提交</button>';
+        }
+      }).catch(function(e){});
+  },3000);
+}
+
+// === 问卷渲染 ===
+function renderQuiz(){
+  var w=document.getElementById('quizWrap');
+  var h='';
+  var qi=0;
+  for(var i=0;i<QUIZ_BANK.length;i++){if(QUIZ_BANK[i].questions===QUESTIONS){qi=i;break;}}
+  var qtitle=QUIZ_BANK.length>0?QUIZ_BANK[qi].title:'问卷';
+  h+='<div class="quiz-header"><div class="quiz-title" onclick="bounce(this)">'+qtitle+'</div><div class="quiz-name">共'+QUESTIONS.length+'题</div></div>';
+  for(var i=0;i<QUESTIONS.length;i++){
+    h+='<div class="q">';
+    h+='<div class="q-text"><span class="qno">问题'+(i+1)+'</span>'+QUESTIONS[i]+' <span class="speak-btn" onclick="speakQuestion(QUESTIONS['+i+'],event)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></span></div>';
+    h+='<div class="blank" id="blank'+i+'"><input id="in'+i+'" placeholder="在此作答…" autocomplete="off"></div>';
+    h+='<div class="pair" id="pair'+i+'"><div class="box mine"><span class="who">'+(cfg.myName||'我')+'</span><span id="mine'+i+'"></span></div><div class="box yours"><span class="who">'+(cfg.yourName||'AI')+'</span><span id="yours'+i+'"></span></div></div>';
+    h+='</div>';
+  }
+  w.innerHTML=h;
+  for(var j=0;j<QUESTIONS.length;j++){
+    (function(idx){
+      document.getElementById('blank'+idx).addEventListener('click',function(){document.getElementById('in'+idx).focus();});
+      document.getElementById('in'+idx).addEventListener('focus',function(){this.parentElement.classList.add('focus');});
+      document.getElementById('in'+idx).addEventListener('blur',function(){this.parentElement.classList.remove('focus');});
+      document.getElementById('in'+idx).addEventListener('input',function(){if(this.value.trim()){this.parentElement.classList.add('filled');}else{this.parentElement.classList.remove('filled');}});
+    })(j);
+  }
+}
+
+// === 选择问卷 ===
+function pickQuiz(){
+  document.getElementById('moreMenu').classList.remove('show');
+  var mask=document.getElementById('pickerMask');
+  var box=document.getElementById('pickerBox');
+  var html='<div class="panel-title">选择问卷</div>';
+  for(var i=0;i<QUIZ_BANK.length;i++){
+    html+='<div class="quiz-item" onclick="loadQuiz('+i+')">'+QUIZ_BANK[i].title+'</div>';
+  }
+  box.innerHTML=html;
+  mask.classList.add('show');
+}
+function loadQuiz(idx){
+  QUESTIONS=QUIZ_BANK[idx].questions;
+  mineAnswers={};yoursAnswers={};
+  document.getElementById('pickerMask').classList.remove('show');
+  if(ONLINE_MODE){
+    fetch(API_BASE+'/xindong/api/create',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({quiz_id:currentQuizId,title:QUIZ_BANK[idx].title,questions:QUESTIONS,my_name:cfg.myName||'我',your_name:cfg.yourName||'AI'})
+    }).catch(function(e){});
+  }
+  document.getElementById('actionBar').innerHTML='<button class="btn btn-primary" id="submitBtn" onclick="submitQuiz()">提交</button>';
+  renderQuiz();
+}
+
+// === 粘贴问卷 ===
+function pasteCustom(){
+  document.getElementById('moreMenu').classList.remove('show');
+  document.getElementById('pasteInput').value='';
+  document.getElementById('pasteMask').classList.add('show');
+}
+function confirmPaste(){
+  var t=document.getElementById('pasteInput').value;
+  if(t&&t.trim()){
+    QUESTIONS=t.trim().split('\n').filter(function(l){return l.trim();});
+    mineAnswers={};yoursAnswers={};
+    document.getElementById('pasteMask').classList.remove('show');
+    if(ONLINE_MODE){fetch(API_BASE+'/xindong/api/create',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({quiz_id:currentQuizId,title:'自定义问卷',questions:QUESTIONS,my_name:cfg.myName||'我',your_name:cfg.yourName||'AI'})
+    }).catch(function(e){});}
+    document.getElementById('actionBar').innerHTML='<button class="btn btn-primary" id="submitBtn" onclick="submitQuiz()">提交</button>';
+    renderQuiz();
+  }else{alert('请先粘贴题目');}
+}
+
+// === 提交 ===
+function submitQuiz(){
+  var m=false;
+  for(var i=0;i<QUESTIONS.length;i++){
+    var v=document.getElementById('in'+i).value.trim();
+    if(!v){m=true;}
+    mineAnswers[i]=v||'（未填）';
+  }
+  if(m&&!confirm('还有题目没答，确定要提交吗？')){return;}
+    var ans={};
+  for(var i=0;i<QUESTIONS.length;i++)ans[i]=mineAnswers[i];
+  fetch(API_BASE+'/xindong/api/submit',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({quiz_id:currentQuizId,who:'human',answers:ans})
+  }).then(function(r){return r.json();}).then(function(d){
+    document.getElementById('submitBtn').style.display='none';
+    for(var k=0;k<QUESTIONS.length;k++){
+      document.getElementById('blank'+k).style.display='none';
+      document.getElementById('mine'+k).textContent=mineAnswers[k];
+      document.getElementById('pair'+k).classList.add('show');
+    }
+    if(d.ai_done){
+      fetch(API_BASE+'/xindong/api/status?quiz_id='+currentQuizId)
+        .then(function(r){return r.json();})
+        .then(function(st){
+          yoursAnswers=st.ai_answers||{};
+          for(var k=0;k<QUESTIONS.length;k++){
+            document.getElementById('yours'+k).textContent=yoursAnswers[k]||'（未答）';
+          }
+          document.getElementById('actionBar').innerHTML='<button class="btn btn-primary" onclick="showResult()">查看合并结果</button>';
+          if(st.merged)saveToHistory(st.title,st.questions,st.human_answers,st.ai_answers);
+        });
+    }else{
+      document.getElementById('actionBar').innerHTML='<div style="text-align:center;padding:16px;color:var(--sub);font-size:13px;">已提交！等AI答题中…<br>答完后会自动合卷</div>';
+      for(var k=0;k<QUESTIONS.length;k++){
+        document.getElementById('yours'+k).textContent='（等待…）';
+      }
+      startPolling();
+    }
+  }).catch(function(e){alert('提交失败：'+e.message);});
+}
+function switchToYours(){
+  // 隐藏我的答案，清空输入框给对方答
+  for(var i=0;i<QUESTIONS.length;i++){
+    document.getElementById('pair'+i).classList.remove('show');
+    document.getElementById('blank'+i).style.display='block';
+    document.getElementById('in'+i).value='';
+    document.getElementById('blank'+i).classList.remove('filled');
+  }
+  document.getElementById('actionBar').innerHTML='<button class="btn btn-primary" onclick="submitYours()">对方提交</button>';
+}
+function submitYours(){
+  var m=false;
+  for(var i=0;i<QUESTIONS.length;i++){
+    var v=document.getElementById('in'+i).value.trim();
+    if(!v){m=true;}
+    yoursAnswers[i]=v||'（未填）';
+  }
+  if(m&&!confirm('还有题目没答，确定要提交吗？')){return;}
+  // 合卷
+  for(var k=0;k<QUESTIONS.length;k++){
+    document.getElementById('blank'+k).style.display='none';
+    document.getElementById('mine'+k).textContent=mineAnswers[k];
+    document.getElementById('yours'+k).textContent=yoursAnswers[k];
+    document.getElementById('pair'+k).classList.add('show');
+  }
+  document.getElementById('actionBar').innerHTML='<button class="btn btn-primary" onclick="showResult()">查看合并结果</button>';
+  var t='';var te=document.querySelector('.quiz-title');if(te)t=te.textContent;
+  saveToHistory(t,QUESTIONS,mineAnswers,yoursAnswers);
+}
+function startPolling(){
+  if(pollTimer)clearInterval(pollTimer);
+  pollTimer=setInterval(function(){
+    fetch(API_BASE+'/xindong/api/status?quiz_id='+currentQuizId)
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(d.ai_done){
+          clearInterval(pollTimer);pollTimer=null;
+          yoursAnswers=d.ai_answers||{};
+          for(var k=0;k<QUESTIONS.length;k++){
+            document.getElementById('yours'+k).textContent=yoursAnswers[k]||'（未答）';
+          }
+          document.getElementById('actionBar').innerHTML='<button class="btn btn-primary" onclick="showResult()">查看合并结果</button>';
+          if(d.merged)saveToHistory(d.title,d.questions,d.human_answers,d.ai_answers);
+        }
+      }).catch(function(e){});
+  },5000);
+}
+
+// === 合卷结果 ===
+function showResult(){
+  var p=document.getElementById('resultPanel');
+  var h='<div class="panel-title">合并结果</div>';
+  var mn=cfg.myName||'我';var yn=cfg.yourName||'AI';
+  for(var i=0;i<QUESTIONS.length;i++){
+    h+='<div class="result-item"><div class="result-q">问题'+(i+1)+'：'+QUESTIONS[i]+'</div>';
+    h+='<div class="result-two"><div class="result-ans"><b>'+mn+'</b>：'+(mineAnswers[i]||'')+'</div>';
+    h+='<div class="result-ans"><b>'+yn+'</b>：'+(yoursAnswers[i]||'')+'</div></div></div>';
+  }
+  h+='<button class="result-close" onclick="closeResult()">保存到历史</button>';
+  p.innerHTML=h;
+  document.getElementById('resultMask').classList.add('show');
+}
+function closeResult(){
+  document.getElementById('resultMask').classList.remove('show');
+  var t='';var te=document.querySelector('.quiz-title');if(te)t=te.textContent;
+  saveToHistory(t,QUESTIONS,mineAnswers,yoursAnswers);
+  alert('已保存到历史记录');
+}
+
+// === 音色设置 ===
+function openConfig(){
+  document.getElementById('moreMenu').classList.remove('show');
+  document.getElementById('cfgMyName').value=cfg.myName;
+  document.getElementById('cfgYourName').value=cfg.yourName;
+  document.getElementById('cfgVoice').value=cfg.voice;
+  document.getElementById('cfgApiKey').value=cfg.apiKey;
+  document.getElementById('configMask').classList.add('show');
+}
+function saveConfig(){
+  cfg.myName=document.getElementById('cfgMyName').value.trim();
+  cfg.yourName=document.getElementById('cfgYourName').value.trim();
+  cfg.voice=document.getElementById('cfgVoice').value.trim();
+  cfg.apiKey=document.getElementById('cfgApiKey').value.trim();
+  saveCfg();
+  document.getElementById('configMask').classList.remove('show');
+  renderQuiz();
+}
+
+// === AI连接 ===
+function showConnect(){
+  document.getElementById('moreMenu').classList.remove('show');
+  var box=document.getElementById('connectBox');
+  var url=API_BASE+'/xindong/api';
+  box.innerHTML='<div class="panel-title">AI 连接地址</div><div class="panel-sub">把这个地址和配对码告诉你的AI</div><div style="background:var(--bg);border-radius:8px;padding:12px;font-size:13px;word-break:break-all;">'+url+'</div><div style="font-size:12px;color:var(--sub);margin:12px 0;line-height:1.8;">创建会话：POST /xindong/api/create<br>查询状态：GET /xindong/api/status?quiz_id=xxx<br>AI连接：POST /xindong/api/connect（需配对码）<br>提交答案：POST /xindong/api/submit (who=ai)<br>列出会话：GET /xindong/api/list</div><button class="setup-btn" onclick="document.getElementById(\'connectMask\').classList.remove(\'show\')">知道了</button>';
+  document.getElementById('connectMask').classList.add('show');
+}
+
+// === 导出 ===
+function exportResult(){
+  document.getElementById('moreMenu').classList.remove('show');
+  var mn=cfg.myName||'我';var yn=cfg.yourName||'AI';
+  var t='';
+  for(var i=0;i<QUESTIONS.length;i++){
+    t+='问题'+(i+1)+'：'+QUESTIONS[i]+'\n';
+    t+='['+mn+']：'+(mineAnswers[i]||'')+'\n';
+    t+='['+yn+']：'+(yoursAnswers[i]||'')+'\n\n';
+  }
+  var b=new Blob([t],{type:'text/plain'});
+  var u=URL.createObjectURL(b);
+  var a=document.createElement('a');a.href=u;a.download='心动_问卷结果.txt';a.click();
+  URL.revokeObjectURL(u);
+}
+
+// === 历史 ===
+function showHistory(){
+  document.getElementById('moreMenu').classList.remove('show');
+  loadHistory();
+  var w=document.getElementById('quizWrap');
+  if(quizHistory.length===0){
+    w.innerHTML='<div style="text-align:center;padding:60px 20px;color:var(--sub);font-size:14px;">还没有历史记录，先去答一份问卷吧～</div>';
+    document.getElementById('actionBar').innerHTML='';
+    return;
+  }
+  var h='<div class="quiz-header"><div class="quiz-title">历史记录</div><div class="quiz-name">共'+quizHistory.length+'份</div></div>';
+  for(var i=0;i<quizHistory.length;i++){
+    var qh=quizHistory[i];
+    h+='<div class="q" style="cursor:pointer;" onclick="viewHistory('+i+')"><div class="q-text">'+qh.title+' · '+qh.date+' · '+qh.questions.length+'题</div></div>';
+  }
+  w.innerHTML=h;
+  document.getElementById('actionBar').innerHTML='';
+}
+function viewHistory(idx){
+  var h=quizHistory[idx];if(!h)return;
+  var w=document.getElementById('quizWrap');
+  var s='<div class="quiz-header"><div class="quiz-title">'+h.title+'</div><div class="quiz-name">'+h.date+' · 共'+h.questions.length+'题</div></div>';
+  for(var i=0;i<h.questions.length;i++){
+    s+='<div class="q"><div class="q-text"><span class="qno">问题'+(i+1)+'</span>'+h.questions[i]+'</div>';
+    s+='<div class="pair show"><div class="box mine"><span class="who">'+(cfg.myName||'我')+'</span><span>'+(h.mine[i]||'')+'</span></div>';
+    s+='<div class="box yours"><span class="who">'+(cfg.yourName||'AI')+'</span><span>'+(h.yours[i]||'')+'</span></div></div></div>';
+  }
+  w.innerHTML=s;
+  document.getElementById('actionBar').innerHTML='';
+}
+
+// === 语音 ===
+function speakQuestion(text,evt){
+  if(!text)return;
+  if(!cfg.apiKey){alert('请先在音色设置中填入API密钥');return;}
+  if(!cfg.voice){alert('请先在音色设置中填入音色ID');return;}
+  var btn=evt?evt.target:event.target;
+  while(btn&&btn.tagName!=='SPAN'&&btn.className!=='speak-btn'){btn=btn.parentElement;}
+  if(!btn)return;
+  btn.classList.add('playing');
+  var cleanKey=cfg.apiKey.replace(/[^\x20-\x7E]/g,'');
+  fetch(cfg.apiUrl+'/audio/speech',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+cleanKey},
+    body:JSON.stringify({model:cfg.model,input:text,voice:cfg.voice.replace(/[^\x20-\x7E]/g,''),response_format:'mp3'})
+  }).then(function(r){
+    if(!r.ok)return r.text().then(function(t){throw new Error('HTTP '+r.status+': '+t);});
+    return r.blob();
+  }).then(function(b){
+    var u=URL.createObjectURL(b);var a=new Audio(u);
+    a.onended=function(){btn.classList.remove('playing');};
+    a.onerror=function(){btn.classList.remove('playing');};
+    a.play().catch(function(e){btn.classList.remove('playing');alert('播放失败: '+e.message);});
+  }).catch(function(e){
+    btn.classList.remove('playing');
+    alert('语音播报失败: '+e.message);
+  });
+}
+
+loadCfg();
+loadHistory();
+</script>
+</body>
+</html>
